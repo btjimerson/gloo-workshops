@@ -20,8 +20,8 @@ Install the Kubernetes Gateway CRDs and kgateway:
 ```bash
 kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.1/standard-install.yaml
 
-helm upgrade -i --create-namespace --namespace kgateway-system --version v2.0.0 kgateway-crds oci://cr.kgateway.dev/kgateway-dev/charts/kgateway-crds
-helm upgrade -i --namespace kgateway-system --version v2.0.0 kgateway oci://cr.kgateway.dev/kgateway-dev/charts/kgateway
+helm upgrade --install --create-namespace --namespace kgateway-system --version v2.0.0 kgateway-crds oci://cr.kgateway.dev/kgateway-dev/charts/kgateway-crds
+helm upgrade --install --namespace kgateway-system --version v2.0.0 kgateway oci://cr.kgateway.dev/kgateway-dev/charts/kgateway
 ```
 
 ## Argo Rollouts installation
@@ -119,14 +119,14 @@ EOF
 Restart Argo Rollouts:
 
 ```bash
-kubectl rollout restart deployment -n argo-rollouts argo-rollouts
+kubectl rollout restart -n argo-rollouts deployments/argo-rollouts
 
-kubectl rollout status -n argo-rollouts deploy argo-rollouts
+kubectl rollout status -n argo-rollouts deployments/argo-rollouts
 ```
 
 ## Application Setup
 
-Create a gateway HTTP listener:
+Create a gateway with an HTTP listener:
 
 ```bash
 kubectl apply -f- <<EOF
@@ -147,7 +147,8 @@ EOF
 Set the address for the gateway as an environment variable:
 
 ```bash
-export GATEWAY_ADDRESS=$(kubectl get svc http-gateway -o jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
+export GATEWAY_ADDRESS=$(kubectl get service http-gateway -o jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
+
 echo "Gateway address: $GATEWAY_ADDRESS"
 ```
 
@@ -170,13 +171,6 @@ spec:
   selector:
     app: ratings
 ---
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: bookinfo-ratings
-  labels:
-    account: ratings
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -196,7 +190,6 @@ spec:
         app: ratings
         version: v1
     spec:
-      serviceAccountName: bookinfo-ratings
       containers:
       - name: ratings
         image: docker.io/istio/examples-bookinfo-ratings-v1:1.20.2
@@ -241,7 +234,7 @@ spec:
 EOF
 ```
 
-Create an HTTPRoute that references the canary and stable services:
+Create an HTTP Route that references the canary and stable services:
 
 ```bash
 kubectl apply -f- <<EOF
@@ -274,13 +267,6 @@ Create a Rollout for the reviews service, instead of a traditional deployment:
 
 ```bash
 kubectl apply -f- <<EOF
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: bookinfo-reviews
-  labels:
-    account: reviews
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
@@ -339,26 +325,9 @@ spec:
       labels:
         app: reviews
     spec:
-      serviceAccountName: bookinfo-reviews
       containers:
       - name: reviews
         image: docker.io/istio/examples-bookinfo-reviews-v1:1.20.2
-        imagePullPolicy: IfNotPresent
-        env:
-        - name: LOG_DIR
-          value: "/tmp/logs"
-        ports:
-        - containerPort: 9080
-        volumeMounts:
-        - name: tmp
-          mountPath: /tmp
-        - name: wlp-output
-          mountPath: /opt/ibm/wlp/output
-      volumes:
-      - name: wlp-output
-        emptyDir: {}
-      - name: tmp
-        emptyDir: {}
 EOF
 ```
 
@@ -380,7 +349,7 @@ Create a rollout for version 2 of the reviews service:
 kubectl argo rollouts set image reviews-rollout reviews=docker.io/istio/examples-bookinfo-reviews-v2:1.20.2
 ```
 
-Check the stable and canary release services select different pods:
+Check that the stable and canary release services select different pods now:
 
 ```bash
 kubectl get service -o wide -l app=reviews
