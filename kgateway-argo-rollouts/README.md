@@ -52,7 +52,7 @@ data:
 EOF
 ```
 
-> [!info]
+> [!NOTE]
 > You can view the full list of releases and architectures for the Gateway API plugin here:
 >
 > [https://github.com/argoproj-labs/rollouts-plugin-trafficrouter-gatewayapi/releases/](https://github.com/argoproj-labs/rollouts-plugin-trafficrouter-gatewayapi/releases/)
