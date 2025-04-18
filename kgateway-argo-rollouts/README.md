@@ -144,6 +144,12 @@ spec:
 EOF
 ```
 
+Wait for the gateway to become available:
+
+```bash
+kubectl wait gateway/http-gateway --for=condition=Programmed
+```
+
 Set the address for the gateway as an environment variable:
 
 ```bash
