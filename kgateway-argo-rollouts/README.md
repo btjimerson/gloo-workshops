@@ -52,14 +52,10 @@ data:
 EOF
 ```
 
-<aside>
-💡
-
-You can view the full list of releases and architectures for the Gateway API plugin here:
-
-[https://github.com/argoproj-labs/rollouts-plugin-trafficrouter-gatewayapi/releases/](https://github.com/argoproj-labs/rollouts-plugin-trafficrouter-gatewayapi/releases/)
-
-</aside>
+> [!info]
+> You can view the full list of releases and architectures for the Gateway API plugin here:
+>
+> [https://github.com/argoproj-labs/rollouts-plugin-trafficrouter-gatewayapi/releases/](https://github.com/argoproj-labs/rollouts-plugin-trafficrouter-gatewayapi/releases/)
 
 Create a role to allow Argo to modify HTTP Routes:
 
